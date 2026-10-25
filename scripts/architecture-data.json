@@ -1,0 +1,273 @@
+{
+  "lanes": [
+    "Student UI",
+    "App backend",
+    "OAuth provider",
+    "Agent SDK",
+    "MCP service"
+  ],
+  "arrows": [
+    [
+      0,
+      1,
+      "1. Validate the classroom task"
+    ],
+    [
+      1,
+      4,
+      "2. Supply the stdio credential"
+    ],
+    [
+      1,
+      4,
+      "3. Set an HTTP bearer header"
+    ],
+    [
+      1,
+      3,
+      "4. Write placeholder configuration"
+    ],
+    [
+      1,
+      2,
+      "5. Complete application-side OAuth"
+    ],
+    [
+      1,
+      3,
+      "6. Load project settings and runtime env"
+    ],
+    [
+      1,
+      3,
+      "7. Run the real SDK query"
+    ],
+    [
+      3,
+      1,
+      "8. Preserve initial status"
+    ],
+    [
+      1,
+      3,
+      "9. Poll current server status"
+    ],
+    [
+      1,
+      3,
+      "10. Fix the cause and reconnect"
+    ],
+    [
+      1,
+      4,
+      "11. Limit GitHub to read-only issues"
+    ],
+    [
+      1,
+      0,
+      "12. Redact credentials before display"
+    ],
+    [
+      1,
+      0,
+      "13. Render answers beside evidence"
+    ]
+  ],
+  "steps": [
+    {
+      "number": 1,
+      "title": "Validate the classroom task",
+      "source": "src/config.ts",
+      "code": "return { mode: (value as RunConfig).mode };\n}\nexport function hostAllows(name: string, input: Record<string, unknown>) {",
+      "language": "typescript",
+      "explanation": "Accept one fixed mode. Browser input does not supply arbitrary endpoints, commands, tokens or GitHub repositories.",
+      "firstLine": 28,
+      "lastLine": 30,
+      "anchors": [
+        "return { mode: (value as RunConfig).mode };"
+      ],
+      "sourceSHA256": "c46566e696a2b1d6ab7015f45355d4063559bfad30348a48beced3a12190650a",
+      "narration": "Step 1. Accept one fixed mode. Browser input does not supply arbitrary endpoints, commands, tokens or GitHub repositories. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 2,
+      "title": "Supply the stdio credential",
+      "source": "src/config.ts",
+      "code": "CLASSROOM_API_KEY: lab.token,\n      CLASSROOM_API_ORIGIN: lab.origin,\n      ANTHROPIC_API_KEY: \"\",\n      GITHUB_MCP_TOKEN: \"\",\n    },",
+      "language": "typescript",
+      "explanation": "The actual classroom credential is passed through the stdio server environment. The process authenticates to its local API; real model and GitHub keys are blanked for that child.",
+      "firstLine": 71,
+      "lastLine": 75,
+      "anchors": [
+        "CLASSROOM_API_KEY: lab.token,"
+      ],
+      "sourceSHA256": "c46566e696a2b1d6ab7015f45355d4063559bfad30348a48beced3a12190650a",
+      "narration": "Step 2. The actual classroom credential is passed through the stdio server environment. The process authenticates to its local API; real model and GitHub keys are blanked for that child. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 3,
+      "title": "Set an HTTP bearer header",
+      "source": "src/config.ts",
+      "code": "headers: { Authorization: `Bearer ${token}` },\n    alwaysLoad: true,\n  });",
+      "language": "typescript",
+      "explanation": "HTTP servers receive a bearer header. Only redacted configuration is displayed, while the real value is used internally for the connection.",
+      "firstLine": 81,
+      "lastLine": 83,
+      "anchors": [
+        "headers: { Authorization: `Bearer ${token}` },"
+      ],
+      "sourceSHA256": "c46566e696a2b1d6ab7015f45355d4063559bfad30348a48beced3a12190650a",
+      "narration": "Step 3. HTTP servers receive a bearer header. Only redacted configuration is displayed, while the real value is used internally for the connection. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 4,
+      "title": "Write placeholder configuration",
+      "source": "src/config.ts",
+      "code": "env: { ...stdio.env, CLASSROOM_API_KEY: \"${DEMO_MCP_TOKEN}\" },\n        },\n        \"secure-api\": http(\"${DEMO_MCP_TOKEN}\"),\n      },",
+      "language": "typescript",
+      "explanation": "The project file stores a placeholder in stdio env and HTTP headers. The SDK runtime receives the actual value through its environment, so the file contains no generated credential.",
+      "firstLine": 109,
+      "lastLine": 112,
+      "anchors": [
+        "env: { ...stdio.env, CLASSROOM_API_KEY: \"${DEMO_MCP_TOKEN}\" },"
+      ],
+      "sourceSHA256": "c46566e696a2b1d6ab7015f45355d4063559bfad30348a48beced3a12190650a",
+      "narration": "Step 4. The project file stores a placeholder in stdio env and HTTP headers. The SDK runtime receives the actual value through its environment, so the file contains no generated credential. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 5,
+      "title": "Complete application-side OAuth",
+      "source": "src/auth-lab.ts",
+      "code": "trace.push({ event: \"state_validated\" });\n        const response = await fetch(origin + \"/token\", {\n          method: \"POST\",\n          headers: { \"Content-Type\": \"application/x-www-form-urlencoded\" },\n          body: new URLSearchParams({\n            grant_type: \"authorization_code\",",
+      "language": "typescript",
+      "explanation": "The application validates state and exchanges the authorization code using its private PKCE verifier. This local teaching flow completes before the SDK receives the access token.",
+      "firstLine": 96,
+      "lastLine": 101,
+      "anchors": [
+        "trace.push({ event: \"state_validated\" });"
+      ],
+      "sourceSHA256": "c557de3c61aa67372443cc84d9ecb09b59beff7d3e4e1ffc7cfd1a4e568263f9",
+      "narration": "Step 5. The application validates state and exchanges the authorization code using its private PKCE verifier. This local teaching flow completes before the SDK receives the access token. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 6,
+      "title": "Load project settings and runtime env",
+      "source": "src/agent.ts",
+      "code": "DEMO_MCP_TOKEN: lab.token,\n        MCP_TIMEOUT: \"4000\",\n        CLAUDE_CODE_MCP_STARTUP_WAIT_MS: \"6000\",",
+      "language": "typescript",
+      "explanation": "Supply the runtime variable used by the generated project configuration. Other experiments pass credentials directly through server config. These values stay outside the displayed projection.",
+      "firstLine": 131,
+      "lastLine": 133,
+      "anchors": [
+        "DEMO_MCP_TOKEN: lab.token,"
+      ],
+      "sourceSHA256": "ae4d7ab82436f3c70380cb2f076551d7d6f60485a7919d07aa7029850466d772",
+      "narration": "Step 6. Supply the runtime variable used by the generated project configuration. Other experiments pass credentials directly through server config. These values stay outside the displayed projection. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 7,
+      "title": "Run the real SDK query",
+      "source": "src/agent.ts",
+      "code": "const run = query({ prompt: input(), options });\n    let text = \"\",\n      status = \"no_result\",",
+      "language": "typescript",
+      "explanation": "Streaming input keeps recovery on one running Query. Normal experiments use one turn; the reconnection experiment performs a health-check turn before requesting data.",
+      "firstLine": 219,
+      "lastLine": 221,
+      "anchors": [
+        "const run = query({ prompt: input(), options });"
+      ],
+      "sourceSHA256": "ae4d7ab82436f3c70380cb2f076551d7d6f60485a7919d07aa7029850466d772",
+      "narration": "Step 7. Streaming input keeps recovery on one running Query. Normal experiments use one turn; the reconnection experiment performs a health-check turn before requesting data. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 8,
+      "title": "Preserve initial status",
+      "source": "src/agent.ts",
+      "code": "initServers = message.mcp_servers.map((s) => ({\n            name: s.name,\n            status: s.status,\n          }));\n          sessionId = message.session_id;",
+      "language": "typescript",
+      "explanation": "The initialization snapshot may differ from current connection state. Preserve it instead of assuming configured servers are usable or treating pending as permanent failure.",
+      "firstLine": 251,
+      "lastLine": 255,
+      "anchors": [
+        "initServers = message.mcp_servers.map((s) => ({"
+      ],
+      "sourceSHA256": "ae4d7ab82436f3c70380cb2f076551d7d6f60485a7919d07aa7029850466d772",
+      "narration": "Step 8. The initialization snapshot may differ from current connection state. Preserve it instead of assuming configured servers are usable or treating pending as permanent failure. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 9,
+      "title": "Poll current server status",
+      "source": "src/agent.ts",
+      "code": "const current = async (phase: string) => {\n      let servers: State[] = [];\n      for (let attempt = 0; attempt < 48; attempt++) {\n        servers = (await run.mcpServerStatus()).map((s) => ({\n          name: s.name,\n          status: s.status,",
+      "language": "typescript",
+      "explanation": "Inspect mcpServerStatus and record separate phase snapshots. Failed and needs-auth indicate an unavailable server; pending is polled rather than immediately treated as failure.",
+      "firstLine": 224,
+      "lastLine": 229,
+      "anchors": [
+        "const current = async (phase: string) => {"
+      ],
+      "sourceSHA256": "ae4d7ab82436f3c70380cb2f076551d7d6f60485a7919d07aa7029850466d772",
+      "narration": "Step 9. Inspect mcpServerStatus and record separate phase snapshots. Failed and needs-auth indicate an unavailable server; pending is polled rather than immediately treated as failure. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 10,
+      "title": "Fix the cause and reconnect",
+      "source": "src/agent.ts",
+      "code": "await run.reconnectMcpServer(\"secure-api\");\n            const servers = await current(\"after-reconnect\");\n            emit({\n              type: \"recovery\",",
+      "language": "typescript",
+      "explanation": "The local outage is restored before the actual SDK reconnect control is invoked. Verify connected status and a completed tool call on the next turn of the same query.",
+      "firstLine": 300,
+      "lastLine": 303,
+      "anchors": [
+        "await run.reconnectMcpServer(\"secure-api\");"
+      ],
+      "sourceSHA256": "ae4d7ab82436f3c70380cb2f076551d7d6f60485a7919d07aa7029850466d772",
+      "narration": "Step 10. The local outage is restored before the actual SDK reconnect control is invoked. Verify connected status and a completed tool call on the next turn of the same query. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 11,
+      "title": "Limit GitHub to read-only issues",
+      "source": "src/config.ts",
+      "code": "\"X-MCP-Tools\": \"list_issues\",\n          \"X-MCP-Readonly\": \"true\",\n        },\n        alwaysLoad: true,",
+      "language": "typescript",
+      "explanation": "The real GitHub connection uses the configured PAT, a read-only server header and only list_issues. A host guard additionally fixes the public repository and three-issue request.",
+      "firstLine": 97,
+      "lastLine": 100,
+      "anchors": [
+        "\"X-MCP-Tools\": \"list_issues\","
+      ],
+      "sourceSHA256": "c46566e696a2b1d6ab7015f45355d4063559bfad30348a48beced3a12190650a",
+      "narration": "Step 11. The real GitHub connection uses the configured PAT, a read-only server header and only list_issues. A host guard additionally fixes the public repository and three-issue request. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 12,
+      "title": "Redact credentials before display",
+      "source": "src/agent.ts",
+      "code": "export function redactor(values: string[]) {\n  return (text: string) => {\n    for (const value of values\n      .filter(Boolean)\n      .sort((a, b) => b.length - a.length))\n      text = text.split(value).join(\"[REDACTED]\");",
+      "language": "typescript",
+      "explanation": "Remove actual configured and generated secrets, plus common token patterns, before rendering configuration or model text. The private .env remains excluded from Git and HTTP routing.",
+      "firstLine": 29,
+      "lastLine": 34,
+      "anchors": [
+        "export function redactor(values: string[]) {"
+      ],
+      "sourceSHA256": "ae4d7ab82436f3c70380cb2f076551d7d6f60485a7919d07aa7029850466d772",
+      "narration": "Step 12. Remove actual configured and generated secrets, plus common token patterns, before rendering configuration or model text. The private .env remains excluded from Git and HTTP routing. This source excerpt shows the corresponding application statement."
+    },
+    {
+      "number": 13,
+      "title": "Render answers beside evidence",
+      "source": "src/client.ts",
+      "code": "if (e.type === \"answer\") renderMarkdown($(\"answer\"), e.text);\n  if (e.type === \"result\") {\n    $(\"status\").textContent = e.status;",
+      "language": "typescript",
+      "explanation": "Sanitize and format actual Markdown. Keep it beside redacted authentication traces, server snapshots, reconnect acknowledgement and real tool results.",
+      "firstLine": 50,
+      "lastLine": 52,
+      "anchors": [
+        "if (e.type === \"answer\") renderMarkdown($(\"answer\"), e.text);"
+      ],
+      "sourceSHA256": "1bb29b5268c9aa0e5768a0cbf0a14cbe269587f2b41d65ebf067e55b66e30ee2",
+      "narration": "Step 13. Sanitize and format actual Markdown. Keep it beside redacted authentication traces, server snapshots, reconnect acknowledgement and real tool results. This source excerpt shows the corresponding application statement."
+    }
+  ]
+}
